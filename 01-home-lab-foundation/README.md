@@ -50,13 +50,13 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
   This prevents the virtual machine from booting from the installation ISO and potentially restarting the installation process each time   the VM is launched.
 
 # Technologies Used
-  Oracle VirtualBox
-  VBoxManage
-  Linux
-  Windows
-  Git
-  GitHub
-  VirtualBox Guest Additions
+  - Oracle VirtualBox
+  - VBoxManage
+  - Linux
+  - Windows
+  - Git
+  - GitHub
+  - VirtualBox Guest Additions
 # Issues / Future Work
   Troubleshoot shared clipboard functionality between the host and guest operating systems.
   Verify that VirtualBox Guest Additions are correctly installed and running on each VM.
