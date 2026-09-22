@@ -39,7 +39,6 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
 
   Create an optical/IDE storage controller and attach the ISO.
     Create an IDE or optical storage controller and attach the downloaded .iso file to it.
-
     This step is necessary because the ISO acts as the installation media during the initial operating system installation.
 
   Start the virtual machine.
