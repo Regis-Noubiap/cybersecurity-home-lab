@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # ============================================================
 # Create a Windows Server 2022 VirtualBox VM named DC01
@@ -7,10 +6,9 @@ set -euo pipefail
 # ============================================================
 
 VM="DC01"
-RAM="4096"
+RAM="8192"
 CPUS="6"
 DISK_MB="60000"
-INTNET="LABNET"
 
 # CHANGE THIS to the location of your Windows Server 2022 ISO.
 ISO="/c/Users/cegen/Downloads/SERVER_EVAL_x64FRE_en-us.iso"
@@ -55,7 +53,7 @@ echo
 
 "$VBOX" createvm \
     --name "$VM" \
-    --ostype "Windows2025_64" \
+    --ostype "Windows2022_64" \
     --register
 
 # ---- Configure VM -------------------------------------------
@@ -63,15 +61,11 @@ echo
 "$VBOX" modifyvm "$VM" \
     --memory "$RAM" \
     --cpus "$CPUS" \
-    --vram 128 \
-    --ioapic on \
     --boot1 dvd \
     --boot2 disk \
     --boot3 none \
     --boot4 none \
-    --nic1 intnet \
-    --intnet1 "$INTNET" \
-    --nictype1 82540EM
+    --nic1 nat \
 
 # ---- Create virtual disk ------------------------------------
 
@@ -85,7 +79,6 @@ echo
 "$VBOX" storagectl "$VM" \
     --name "SATA" \
     --add sata \
-    --controller IntelAhci
 
 "$VBOX" storageattach "$VM" \
     --storagectl "SATA" \
