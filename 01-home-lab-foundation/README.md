@@ -113,11 +113,11 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
 
 In this part of the cybersecurity home lab, I built a small Windows Active Directory environment using VirtualBox. The objective was to gain hands-on experience with Windows Server administration, Active Directory Domain Services (AD DS), DNS, user and organizational unit management, domain joining, and Group Policy.
 
-I created a Windows Server virtual machine named **DC01** and allocated:
+I created a Windows Server virtual machine named DC01 and allocated:
 
-- **2 vCPUs**
-- **4096 MB RAM**
-- Windows Server with **Desktop Experience**
+- 2 vCPUs
+- 4096 MB RAM
+- Windows Server with Desktop Experience
 
 The server was configured with a static IPv4 address:
 
@@ -130,7 +130,7 @@ DNS Server:      192.168.1.10
 
 Using a static IP is especially important for a domain controller because domain clients must be able to consistently locate DNS and Active Directory services.
 
-I installed the **Active Directory Domain Services** role through Server Manager and promoted DC01 to a domain controller by creating a new Active Directory forest:
+I installed the Active Directory Domain Services role through Server Manager and promoted DC01 to a domain controller by creating a new Active Directory forest:
 
 ```text
 lab.local
@@ -144,7 +144,7 @@ Install-ADDSForest -DomainName "lab.local" -InstallDNS
 
 After the promotion and automatic reboot, DC01 became the first domain controller and DNS server for the `lab.local` domain.
 
-I then opened **Active Directory Users and Computers (ADUC)** and created an Organizational Unit called:
+I then opened Active Directory Users and Computers (ADUC) and created an Organizational Unit called:
 
 ```text
 Staff
@@ -168,7 +168,7 @@ lab.local
 
 I rebooted the client and successfully authenticated using an Active Directory domain user instead of a local Windows account.
 
-I also began experimenting with **Group Policy Management** on DC01. Policies were linked to the appropriate Active Directory scope so that settings could be centrally pushed to domain users and computers.
+I also began experimenting with Group Policy Management on DC01. Policies were linked to the appropriate Active Directory scope so that settings could be centrally pushed to domain users and computers.
 
 Examples included experimenting with:
 
@@ -184,7 +184,7 @@ This helped demonstrate how organizations can centrally control hundreds or thou
 
 ## Lessons Learned
 
-One of the biggest lessons from this exercise was understanding how closely **Active Directory and DNS** are connected.
+One of the biggest lessons from this exercise was understanding how closely Active Directory and DNS are connected.
 
 Simply having network connectivity between the client and domain controller is not enough. The Windows client must use the Active Directory DNS server to successfully discover services associated with the domain.
 
@@ -204,7 +204,7 @@ Domain
 
 Organizational Units are not simply folders. They provide an administrative structure that can be used to delegate permissions and determine where Group Policy Objects are applied.
 
-Another important lesson was understanding the difference between **local accounts and domain accounts**. Once the Windows 11 machine joined the domain, authentication could be centrally managed by the domain controller.
+Another important lesson was understanding the difference between local accounts and domain accounts. Once the Windows 11 machine joined the domain, authentication could be centrally managed by the domain controller.
 
 This also demonstrated why Active Directory is so important from a cybersecurity perspective. Active Directory contains the identities, groups, permissions, authentication mechanisms, and administrative privileges used throughout many enterprise Windows environments.
 
@@ -221,7 +221,7 @@ The lab therefore helped connect system administration concepts with cybersecuri
 - Account lockouts
 - Enterprise security policy enforcement
 
-I also learned that Group Policy troubleshooting requires understanding both the **Active Directory structure** and the distinction between **User Configuration** and **Computer Configuration**.
+I also learned that Group Policy troubleshooting requires understanding both the Active Directory structure and the distinction between User Configuration and Computer Configuration.
 
 A GPO existing in Group Policy Management does not automatically mean the settings will apply. The GPO must be linked to the correct domain or OU, the relevant user or computer must be within its scope, and the policy must successfully refresh on the endpoint.
 
