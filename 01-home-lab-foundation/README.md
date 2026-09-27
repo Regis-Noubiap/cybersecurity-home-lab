@@ -192,14 +192,11 @@ I also developed a better understanding of the relationship between:
 
 ```text
 Domain
-   |
-   +-- Organizational Units
-   |      |
-   |      +-- Users
-   |      +-- Computers
-   |      +-- Groups
-   |
-   +-- Group Policies
+  Organizational Units
+    Users
+    Computers
+    Groups
+  Group Policies
 ```
 
 Organizational Units are not simply folders. They provide an administrative structure that can be used to delegate permissions and determine where Group Policy Objects are applied.
