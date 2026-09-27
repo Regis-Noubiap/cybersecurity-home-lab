@@ -298,19 +298,12 @@ This demonstrated that successful communication in one direction does not necess
 Troubleshooting this reinforced the importance of checking:
 
 ```text
-IP configuration
-    ↓
-Subnet configuration
-    ↓
-VirtualBox network adapter
-    ↓
-Windows network profile
-    ↓
-Windows Firewall
-    ↓
-DNS
-    ↓
-Active Directory
+- IP Configuration
+- Subnet Configuration
+- VirtualBox network adapter
+- Windows Network Profile
+- Windows Firewall
+- DNS
 ```
 
 I also encountered issues while testing Group Policy. For example, a configured desktop wallpaper policy did not immediately appear on the Windows 11 domain client.
