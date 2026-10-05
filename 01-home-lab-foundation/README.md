@@ -107,8 +107,7 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
 
 
   # Part 3 : Building the Active Directory Environment
-  # Part 3: Active Directory Domain Lab
-
+  
 ## Part Summary
 
 In this part of the cybersecurity home lab, I built a small Windows Active Directory environment using VirtualBox. The objective was to gain hands-on experience with Windows Server administration, Active Directory Domain Services (AD DS), DNS, user and organizational unit management, domain joining, and Group Policy.
@@ -318,9 +317,9 @@ This became an opportunity to investigate:
 - Whether `gpupdate /force` had successfully refreshed the policy
 - Whether the policy appeared in `gpresult`
 
-## Part 4: Stand Up Splunk and Ingest Your First Logs
+# Part 4: Stand Up Splunk and Ingest Your First Logs
 
-### Part Summary
+## Part Summary
 
 In this part of the project, I deployed **Splunk Enterprise** as the central SIEM platform for the lab environment and configured Windows systems to forward event logs to it using the **Splunk Universal Forwarder**.
 
