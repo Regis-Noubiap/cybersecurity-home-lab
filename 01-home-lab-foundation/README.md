@@ -2,7 +2,7 @@
 
 Date: 22/09/2026
 
-# Part Summary
+## Part Summary
 
 Deployed and configured three VMs using Oracle VirtualBox. Two VMs were deployed through the VirtualBox GUI, while the third was created and configured entirely from the terminal using VBoxManage.
 
@@ -14,7 +14,7 @@ I also encountered issues with copying and pasting content between the host syst
 
 Finally, I installed Git, configured local Git repositories, and connected them to remote repositories hosted on GitHub.
 
-# Lessons Learned
+## Lessons Learned
 
 To deploy a virtual machine from the terminal using VirtualBox, the following general process can be followed:
 
@@ -49,7 +49,7 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
 
   This prevents the virtual machine from booting from the installation ISO and potentially restarting the installation process each time   the VM is launched.
 
-# Technologies Used
+## Technologies Used
   - Oracle VirtualBox
   - VBoxManage
   - Linux
@@ -57,14 +57,14 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
   - Git
   - GitHub
   - VirtualBox Guest Additions
-# Issues / Future Work
+## Issues / Future Work
   Troubleshoot shared clipboard functionality between the host and guest operating systems.
   Verify that VirtualBox Guest Additions are correctly installed and running on each VM.
   Explore additional VBoxManage automation to make VM deployments repeatable.
   Consider storing VM deployment scripts in GitHub for version control and reuse.
 
   # Part 2 : Git Setup
-  # Part Summary
+  ## Part Summary
   This part of the project involved the setting up of a GitHub account and local git repository for the regular committing of updates and project work. After signing up for a GitHub account, 
   a local git repository was installed on the Ubuntu VM using the following commands:
 
@@ -95,14 +95,14 @@ To deploy a virtual machine from the terminal using VirtualBox, the following ge
   git commit -m "Adding home lab foundation write up"
   git push origin main
   
-  # Lessons Learned
+  ## Lessons Learned
   - It is very important to have an access token with write privileges. Access tokens without specific write privileges will not grant the push privileges required.
   - Using git add [file] sends the file to the staging area. In order to push it, one needs to use git push.
   - Commit and push are very different in the sense that commit tracks directory and file changes while push sends a specific update to the remote GitHub repository. 
   
-  # Technologies Used 
+  ## Technologies Used 
   Git
-  # Issues / Future Work 
+  ## Issues / Future Work 
   - At the first try, Git would not push files because the token did not have write privileges. This was fixed by adding write privileges to the token.
 
 
