@@ -317,7 +317,7 @@ This became an opportunity to investigate:
 - Whether `gpupdate /force` had successfully refreshed the policy
 - Whether the policy appeared in `gpresult`
 
-# Part 4: Stand Up Splunk and Ingest Your First Logs
+# Part 4: Splunk setup and Log Ingestion
 
 ## Part Summary
 
