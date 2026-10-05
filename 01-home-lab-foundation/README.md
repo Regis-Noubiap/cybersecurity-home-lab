@@ -318,4 +318,198 @@ This became an opportunity to investigate:
 - Whether `gpupdate /force` had successfully refreshed the policy
 - Whether the policy appeared in `gpresult`
 
-  
+## Part 4: Stand Up Splunk and Ingest Your First Logs
+
+### Part Summary
+
+In this part of the project, I deployed **Splunk Enterprise** as the central SIEM platform for the lab environment and configured Windows systems to forward event logs to it using the **Splunk Universal Forwarder**.
+
+The objective was to move beyond simply building the Active Directory environment and begin collecting security telemetry that could later be used for monitoring, investigation, detection engineering, and SOC-style analysis.
+
+Splunk was installed on a dedicated Ubuntu virtual machine, while the Windows machines from the Active Directory lab were configured as log sources. The Splunk server was configured to listen for forwarded events on **TCP port 9997**, and the Universal Forwarder was installed on the Windows systems to transmit the **Application, Security, and System** event logs.
+
+After configuring log forwarding, I validated ingestion through Splunk Search using queries such as:
+
+```spl
+index=* sourcetype=WinEventLog:Security
+```
+
+This confirmed that Windows security events were successfully being centralized in the SIEM.
+
+I also began working with important Windows Event IDs such as:
+
+```text
+4624 - Successful account logon
+4625 - Failed account logon
+4720 - User account created
+```
+
+Rather than stopping after log ingestion, I used the collected data to begin building SOC-focused searches and dashboard components for authentication monitoring.
+
+---
+
+## Lessons Learned
+
+This part of the project helped me understand the complete flow of log data from an endpoint into a SIEM.
+
+One of the most important concepts was understanding that Splunk is composed of different components with different responsibilities. In this lab, the **Universal Forwarder** runs on the Windows endpoint and collects the configured logs, while the Splunk server receives, indexes, and makes those events searchable.
+
+The basic data flow became:
+
+```text
+Windows Event Logs
+        |
+        v
+Splunk Universal Forwarder
+        |
+        | TCP 9997
+        v
+Splunk Enterprise
+        |
+        v
+Indexer / Search
+        |
+        v
+Searches / Reports / Dashboards
+```
+
+I also learned that simply installing Splunk does not mean logs will automatically appear. Several pieces must be configured correctly:
+
+- The Splunk server must be listening on a receiving port.
+- The forwarder must know the Splunk server's IP address.
+- Network connectivity between the endpoint and server must exist.
+- The correct Windows event logs must be selected for monitoring.
+- The Splunk services must be running.
+- Searches must use the appropriate index, source, host, and sourcetype.
+
+Working with Windows Event IDs also reinforced how valuable native Windows telemetry is for security monitoring. For example, Event ID **4625** can be used to identify failed authentication attempts, while Event ID **4720** can be used to detect newly created accounts.
+
+I also became more comfortable with **Splunk Processing Language (SPL)**. Even simple searches demonstrated how raw logs can quickly be transformed into useful security information.
+
+For example:
+
+```spl
+index=* sourcetype=WinEventLog:Security EventCode=4625
+```
+
+can be used to identify failed authentication events.
+
+The project also demonstrated an important SOC principle: collecting logs is only the first step. The real value of a SIEM comes from building detections, reports, dashboards, and alerts on top of the data.
+
+---
+
+## Technologies Used
+
+**Splunk Enterprise**  
+Used as the central SIEM platform for collecting, indexing, searching, and analysing security logs.
+
+**Splunk Universal Forwarder**  
+Installed on the Windows systems to forward Windows Event Logs to the Splunk server.
+
+**Ubuntu Linux**  
+Used as the operating system hosting the Splunk Enterprise server.
+
+**Windows Server / Domain Controller**  
+Provided Active Directory and Windows security events for ingestion into Splunk.
+
+**Windows 11**  
+Used as a domain-connected endpoint and additional source of Windows event telemetry.
+
+**Windows Event Viewer / Event Logs**  
+Provided Application, Security, and System events that could be centrally analysed.
+
+**Splunk Processing Language (SPL)**  
+Used to search and analyse ingested events.
+
+Example:
+
+```spl
+index=* sourcetype=WinEventLog:Security
+```
+
+**TCP Port 9997**  
+Configured as the Splunk receiving port for Universal Forwarder traffic.
+
+**TCP Port 8000**  
+Used to access the Splunk Enterprise web interface.
+
+**VirtualBox**  
+Used to host the Splunk, Windows Server, and Windows client virtual machines within the cybersecurity lab environment.
+
+---
+
+## Issues / Future Work
+
+One of the main challenges during this part of the project was establishing connectivity between the Windows systems and the Splunk server.
+
+Because the lab uses multiple virtual network adapters, including **Host-Only** and **NAT** interfaces, the virtual machines had to be configured carefully so that they could both communicate internally and access the Internet when necessary.
+
+I also encountered difficulties downloading the Splunk Universal Forwarder directly from one of the Windows virtual machines because Internet connectivity was initially unavailable. Configuring the secondary network adapter to use DHCP through NAT restored connectivity and allowed the required software to be obtained.
+
+Another important troubleshooting area was ensuring that the correct Splunk destination address and receiving port were configured. The Windows Universal Forwarder needed to send data to:
+
+```text
+Splunk Server IP:9997
+```
+
+rather than the Splunk web interface on port `8000`.
+
+Future improvements to this part of the lab will include expanding the number of security searches and creating a more complete SOC monitoring dashboard.
+
+Planned searches include:
+
+```spl
+EventCode=4625
+```
+
+for failed authentication attempts,
+
+```spl
+EventCode=4624
+```
+
+for successful authentication,
+
+```spl
+EventCode=4720
+```
+
+for newly created user accounts,
+
+and additional searches covering:
+
+```text
+4726 - User account deleted
+4732 - User added to local security group
+4740 - Account locked out
+7045 - New Windows service installed
+4688 - New process created
+```
+
+The next major improvement will be to correlate these events rather than simply viewing them individually.
+
+For example, repeated failed logons followed by a successful authentication could potentially indicate password guessing:
+
+```text
+Multiple 4625 Events
+        |
+        v
+Successful 4624
+        |
+        v
+Potential Brute-Force / Password Guessing Investigation
+```
+
+I also plan to expand the Splunk dashboard with panels covering:
+
+- Failed logins
+- Successful logins
+- Account lockouts
+- Newly created accounts
+- Administrative group membership changes
+- New Windows services
+- Suspicious process execution
+- PowerShell activity
+- Authentication activity by host and user
+
+This will transform the Splunk deployment from a basic log collection server into a more realistic **SOC monitoring and detection platform**.
