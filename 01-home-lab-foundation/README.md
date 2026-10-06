@@ -1598,3 +1598,228 @@ External Network Connection
       v
 Potential Security Incident
 ```
+
+# Part 7 : Attack Your Own Domain and Detect It
+
+## Part Summary
+
+In this part of the lab, I completed the full attack-and-defend workflow by generating a controlled password-guessing attack against my own Active Directory environment and detecting the resulting activity in Splunk.
+
+The lab consisted of a Kali Linux attacker machine, a Windows 11 domain-joined endpoint, an Active Directory domain controller, and a Splunk server collecting Windows Security logs.
+
+The test domain account used for the exercise was:
+
+```text
+LAB\ashley
+```
+
+Before running the attack, I verified that the Windows 11 endpoint was reachable over RDP and that the domain account had permission to log on remotely. The account initially was not a member of the local `Remote Desktop Users` group, so I added it with:
+
+```cmd
+net localgroup "Remote Desktop Users" "LAB\ashley" /add
+```
+
+I then verified that Remote Desktop Services was running and that TCP port `3389` was listening.
+
+On Kali Linux, I created a small controlled password list containing several incorrect passwords and the real password of the lab account somewhere in the list.
+
+```bash
+nano wordlist.txt
+```
+
+I then used Hydra to generate repeated RDP authentication attempts against the account:
+
+```bash
+hydra -l ashley -P wordlist.txt -t 1 -V -f rdp://192.168.1.12/LAB
+```
+
+Using a small wordlist allowed me to generate both failed and successful authentication events while keeping the test controlled.
+
+The attack produced Windows Security events including:
+
+```text
+4625 - Failed Logon
+4624 - Successful Logon
+```
+
+I first searched Splunk for repeated failed logons:
+
+```spl
+index=* source="WinEventLog:Security" EventCode=4625
+| stats count by Account_Name, IpAddress
+| where count >= 5
+```
+
+This detected a high number of failed authentication attempts, but it did not determine whether the attacker eventually succeeded.
+
+I therefore improved the detection by correlating failed logons with a later successful authentication:
+
+```spl
+index=* source="WinEventLog:Security" Account_Name=* Account_Name!=""
+| streamstats current=f window=10 global=f count(eval(EventCode=4625)) as consecutive_failures by Account_Name
+| where EventCode=4624 AND consecutive_failures >= 5
+| table _time Account_Name IpAddress consecutive_failures
+```
+
+The detection looks for a successful `4624` event after at least five recent `4625` failures for the same account.
+
+The behavior being detected is therefore:
+
+```text
+4625
+4625
+4625
+4625
+4625
+  ↓
+4624
+  ↓
+Possible successful brute-force attack
+```
+
+I saved the search as a Splunk alert so that the same authentication pattern can be detected automatically.
+
+I also considered how an attacker could evade the rule. A slower password attack that attempts only one password every few minutes may stay below the threshold and avoid triggering a short-window count-based detection.
+
+This demonstrated the complete SOC workflow:
+
+```text
+Generate attack activity
+        ↓
+Collect Windows telemetry
+        ↓
+Investigate events in Splunk
+        ↓
+Write detection logic
+        ↓
+Create alert
+        ↓
+Test weaknesses
+        ↓
+Tune detection
+```
+
+---
+
+## Lessons Learned
+
+This project demonstrated that individual authentication failures are not necessarily malicious. Users regularly mistype passwords, forget credentials, or have applications using old cached passwords.
+
+The context surrounding the event is therefore extremely important.
+
+A single:
+
+```text
+Event ID 4625
+```
+
+has relatively little meaning by itself.
+
+Several failures from the same source against the same account become more suspicious.
+
+Several failures followed by:
+
+```text
+Event ID 4624
+```
+
+are much more important because they may indicate that the password-guessing activity eventually succeeded.
+
+I also learned the importance of understanding the fields inside Windows authentication events, particularly:
+
+```text
+Account_Name
+IpAddress
+Logon_Type
+EventCode
+```
+
+Another lesson was that detection engineering is iterative. My first rule simply counted failed logons. That worked against the attack I generated, but it had a major weakness: it could not distinguish between an unsuccessful attack and one that successfully obtained valid credentials.
+
+Adding successful authentication correlation made the detection more meaningful.
+
+I also learned that thresholds and time windows must be chosen carefully. A threshold that is too low can generate false positives from users who mistype their passwords, while a threshold that is too high may allow attackers to operate without being detected.
+
+The exercise also demonstrated an important evasion technique: **low-and-slow password guessing**. An attacker could deliberately spread attempts over a longer period so that no short detection window contains enough failures to trigger the alert.
+
+Most importantly, I experienced the entire detection-engineering process from both sides. I generated the behavior myself, observed how Windows recorded it, investigated it in the SIEM, created a detection, and then considered how the detection could be bypassed.
+
+---
+
+## Technologies Used
+
+- **Active Directory Domain Services** — provided the `lab.local` domain and domain authentication.
+- **Windows Server / DC01** — acted as the Active Directory domain controller and DNS server.
+- **Windows 11** — domain-joined endpoint used as the RDP authentication target.
+- **Kali Linux** — generated the controlled password-guessing activity.
+- **THC Hydra** — performed repeated RDP authentication attempts using a controlled password list.
+- **Remote Desktop Protocol (RDP)** — authentication protocol used during the simulation.
+- **Windows Security Event Logs** — provided the authentication telemetry used for detection.
+- **Event ID 4625** — identified failed authentication attempts.
+- **Event ID 4624** — identified successful authentication.
+- **Splunk Universal Forwarder** — forwarded Windows Security logs to the Splunk server.
+- **Splunk Enterprise** — used to search, correlate, analyze, and alert on the authentication activity.
+- **SPL (Search Processing Language)** — used to build and tune the brute-force detection.
+- **VirtualBox** — hosted the isolated virtual lab environment.
+
+---
+
+## Issues / Future Work
+
+One issue encountered during the project was that the domain account initially could not authenticate over RDP even though the machine was reachable.
+
+The account was not a member of:
+
+```text
+Remote Desktop Users
+```
+
+Adding the domain account resolved the problem:
+
+```cmd
+net localgroup "Remote Desktop Users" "LAB\ashley" /add
+```
+
+I also had to troubleshoot the Kali networking configuration to ensure that traffic for the `192.168.1.0/24` lab network was using the correct VirtualBox interface rather than the NAT interface.
+
+Another limitation is that the current detection focuses primarily on the number of failed authentication attempts preceding a successful login.
+
+A production-quality detection should also correlate:
+
+```text
+Account
+Source IP
+Destination host
+Logon type
+Time window
+```
+
+For example, correlating both the account and source IP would reduce the chance of associating failed attempts from one system with a legitimate successful login from another.
+
+The current detection could also miss a slow brute-force attack. An attacker attempting one password every several minutes may never exceed the threshold inside a short detection window.
+
+Future work will include developing detections for:
+
+- Slow brute-force attacks
+- Password spraying
+- One source attacking multiple accounts
+- Authentication attempts against privileged accounts
+- Unusual RDP logons
+- Account lockout events
+- Successful logons from unexpected systems
+- Repeated failures distributed across multiple source IP addresses
+- Correlation between authentication events and Sysmon endpoint telemetry
+
+I would also improve the detection by grouping activity by both account and source IP and applying an explicit time window rather than relying only on the previous number of events.
+
+Another future improvement would be to create a dedicated Splunk dashboard showing:
+
+```text
+Failed logons by source IP
+Failed logons by account
+Successful logons after failures
+Top targeted accounts
+RDP authentication activity
+```
+
+This project demonstrated that a working detection is only the starting point. The next step is continually testing how the rule can be bypassed and improving it without creating excessive false positives.
