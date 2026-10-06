@@ -1599,7 +1599,7 @@ External Network Connection
 Potential Security Incident
 ```
 
-# Part 7 : Attack Your Own Domain and Detect It
+# Part 7 : Attacking the Domain and Detecting It
 
 ## Part Summary
 
