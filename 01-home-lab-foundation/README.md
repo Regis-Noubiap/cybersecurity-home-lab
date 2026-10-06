@@ -513,7 +513,7 @@ I also plan to expand the Splunk dashboard with panels covering:
 
 This will transform the Splunk deployment from a basic log collection server into a more realistic **SOC monitoring and detection platform**.
 
-# Part 5: Read Windows Event Logs Like an Analyst
+# Part 5: Reading Windows Event Logs
 
 ## Part Summary
 
@@ -1134,7 +1134,7 @@ For example:
 Sysmon network connection
 ```
 
-# Part 6: Add Sysmon and Write Your First Detection
+# Part 6: Adding Sysmon and Writing my First Detection
 
 ## Part Summary
 
