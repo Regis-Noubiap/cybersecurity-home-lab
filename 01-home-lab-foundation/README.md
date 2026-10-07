@@ -1827,13 +1827,12 @@ This project demonstrated that a working detection is only the starting point. T
 
 # Part 8: Deploy Wazuh for Endpoint Detection
 ## Part Summary
-```text
 In this part, I deployed Wazuh as an endpoint detection and security monitoring platform in my home lab.
 I created a dedicated Ubuntu VM for the Wazuh server and installed the full Wazuh stack using the official installation script. After the installation completed, I accessed the Wazuh dashboard through a web browser and verified that the platform was running correctly.
 I then deployed a Wazuh agent to my Windows 11 VM so the endpoint could send security telemetry to the Wazuh manager. During setup, I encountered a connectivity issue where the Windows machine could not reach the Wazuh server. I resolved this by adding the correct IP route on the Wazuh VM.
 Once the agent was connected and active, I tested Wazuh's detection capabilities by generating suspicious activity and reviewing the resulting alerts in the dashboard. I also configured File Integrity Monitoring (FIM) so that Wazuh could detect changes made to monitored files and folders.
 This project gave me practical experience with endpoint monitoring, alert investigation, MITRE ATT&CK mapping, and the type of agent-based security tooling commonly used in SOC environments.
-```
+
 ## Lessons Learned
 - I learned how to install and configure a complete Wazuh security monitoring platform.
 - I learned how Wazuh agents communicate with the central Wazuh manager.
@@ -1855,8 +1854,7 @@ This project gave me practical experience with endpoint monitoring, alert invest
 - Linux networking and routing
 - Splunk
 ## Issues / Future Work
-```text
+
 One of the main issues I encountered was that the Windows 11 VM was initially unable to communicate with the Wazuh server. Ping requests were timing out even though both systems were part of the lab environment. After troubleshooting the network configuration, I determined that the Wazuh VM was missing the correct route. Adding an IP route resolved the problem and allowed the Wazuh agent to communicate with the manager.
 For future work, I plan to create more advanced custom Wazuh detection rules rather than relying only on built-in alerts. I also want to expand File Integrity Monitoring to additional sensitive directories and test more realistic attack techniques against monitored endpoints.
 Another improvement would be to compare the same malicious activity across both Wazuh and Splunk to see how each platform presents and correlates the event. This would provide more experience with multi-tool SOC investigations and detection engineering.
-```
