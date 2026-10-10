@@ -1858,3 +1858,76 @@ This project gave me practical experience with endpoint monitoring, alert invest
 One of the main issues I encountered was that the Windows 11 VM was initially unable to communicate with the Wazuh server. Ping requests were timing out even though both systems were part of the lab environment. After troubleshooting the network configuration, I determined that the Wazuh VM was missing the correct route. Adding an IP route resolved the problem and allowed the Wazuh agent to communicate with the manager.
 For future work, I plan to create more advanced custom Wazuh detection rules rather than relying only on built-in alerts. I also want to expand File Integrity Monitoring to additional sensitive directories and test more realistic attack techniques against monitored endpoints.
 Another improvement would be to compare the same malicious activity across both Wazuh and Splunk to see how each platform presents and correlates the event. This would provide more experience with multi-tool SOC investigations and detection engineering.
+
+# Part 9: Mapping the Network
+
+## Part Summary
+
+In this part, I used **Nmap** to perform network reconnaissance against systems inside my isolated cybersecurity home lab.
+
+The goal was to identify active hosts, enumerate open ports and running services, and analyze those services as part of the system's overall **attack surface**.
+
+I started with a host discovery scan to identify which systems were active on the lab network:
+
+```bash
+nmap -sn 10.0.0.0/24
+```
+The -sn option performs host discovery without carrying out a full port scan.
+After identifying a live Windows host, I performed service enumeration using:
+nmap -sV 10.0.0.25
+
+The -sV option attempts to determine which services and software versions are running on discovered ports.
+I then ran a more complete scan against the Windows host:
+nmap -p- -A 10.0.0.25 -oN windows-client-scan.txt
+
+This scan:
+- Scanned all 65,535 TCP ports with -p-
+- Enabled OS detection, version detection, scripts, and traceroute with -A
+- Saved the results in a human-readable file using -oN
+The saved scan output can be found in this repository:
+windows-client-scan.txt
+
+The purpose of the scan was not only to identify open ports, but to determine whether the services exposed by those ports were actually necessary.
+Each open port represents part of the machine's attack surface and should be justified based on the role of the system.
+Lessons Learned
+- Learned how to identify live systems on a network using Nmap host discovery
+- Learned the difference between host discovery and full port scanning
+- Used -sV to identify services listening on open ports
+- Used -p- to scan the full TCP port range
+- Used -A for more detailed operating system and service enumeration
+- Learned how to save Nmap results to a text file using -oN
+- Improved my understanding of how open ports contribute to attack surface
+- Learned that unnecessary services should be disabled or restricted
+- Connected reconnaissance results to earlier attack techniques used in the lab
+- Learned how Nmap can be used by both attackers for reconnaissance and defenders for network auditing
+
+## Technologies Used
+- Nmap
+- Kali Linux
+- Windows 11
+- TCP/IP
+- Windows Firewall
+- Service Enumeration
+- Port Scanning
+- Network Reconnaissance
+- Virtual Machines
+
+## Issues / Future Work
+One area I want to improve is documenting the effect of firewall changes using before-and-after scans.
+For example, I can scan the Windows host while a service is exposed, modify the firewall rule, and then rerun the same Nmap scan to confirm that the port is no longer reachable.
+I also plan to document each discovered port individually and determine whether the service is necessary.
+Example:
+Port	Service	Purpose	Required?
+135/tcp	Microsoft RPC	Windows remote procedure calls	Depends on environment
+445/tcp	SMB	Windows file and printer sharing	Only if required
+3389/tcp	RDP	Remote Desktop access	Only if remote access is required
+
+
+This helps move beyond simply identifying open ports and instead focuses on whether the exposure is justified.
+Future improvements include:
+- Scanning additional lab systems such as Linux servers and the domain controller
+- Comparing scan results across different operating systems
+- Performing before-and-after firewall scans
+- Identifying unnecessary services
+- Mapping exposed services to possible attack techniques
+- Comparing Nmap findings with alerts generated in Wazuh or Splunk
