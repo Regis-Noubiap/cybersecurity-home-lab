@@ -1931,3 +1931,127 @@ Future improvements include:
 - Identifying unnecessary services
 - Mapping exposed services to possible attack techniques
 - Comparing Nmap findings with alerts generated in Wazuh or Splunk
+# Part 10: Break Into a Vulnerable Machine and Document It
+
+## Part Summary
+
+In this part, I deployed **DVWA (Damn Vulnerable Web Application)** inside an isolated lab VM and used Kali Linux to test two common web application attacks:
+
+- SQL Injection
+- Brute-Force Authentication
+
+The goal was not simply to exploit the vulnerable application, but to understand **why the attacks worked**, how the application behavior changed at higher security levels, and what defensive controls can prevent the same vulnerabilities in real environments.
+
+DVWA was deployed using Docker:
+
+```bash
+sudo apt install docker.io -y
+sudo docker run --rm -it -p 80:80 vulnerables/web-dvwa
+```
+After starting the application, I browsed to the DVWA VM's IP address, completed the database setup, logged in, and set the security level to Low.
+SQL Injection
+The first vulnerability I tested was SQL injection.
+On the DVWA SQL Injection page, I entered:
+1' OR '1'='1
+
+At the Low security level, the application returned multiple user records instead of a single expected result.
+Why It Worked
+The application trusted user-controlled input and inserted it directly into a database query.
+The injected condition:
+'1'='1
+
+always evaluates as true.
+This changed the logic of the original query and caused the database to return more data than intended.
+Security Impact
+SQL injection can allow an attacker to:
+- Read unauthorized database records
+- Bypass application logic
+- Modify or delete data
+- Access sensitive information
+- Potentially compromise the underlying database
+## How to Prevent It
+The strongest defense is to avoid building SQL statements directly from user input.
+Recommended protections include:
+- Parameterized queries
+- Prepared statements
+- Server-side input validation
+- Least-privilege database accounts
+- Proper error handling
+At higher DVWA security levels, stronger input handling made the original injection less effective or unsuccessful.
+Brute-Force Authentication
+I also tested the DVWA Brute Force module from my Kali VM.
+At the Low security level, the application allowed repeated authentication attempts without strong protections against automated password guessing.
+A small username and password wordlist could therefore be used to repeatedly test login combinations until valid credentials were found.
+## Why It Worked
+The vulnerable configuration lacked sufficient controls such as:
+- Rate limiting
+- Login delays
+- Account lockouts
+- Multi-factor authentication
+Without these protections, repeated authentication attempts could be sent with little resistance.
+## Security Impact
+Successful brute-force attacks can allow an attacker to:
+- Gain unauthorized access
+- Compromise user accounts
+- Escalate access using valid credentials
+- Blend into normal authentication traffic after compromise
+## How to Prevent It
+Defensive controls should include:
+- Rate limiting
+- Progressive login delays
+- Account lockout policies
+- Strong password requirements
+- Multi-factor authentication
+- Detection of repeated failed logins
+- Alerting on abnormal authentication behavior
+When the DVWA security level was increased, the same attack became harder because additional defensive controls were introduced.
+## Security Level Comparison
+Security Level	SQL Injection	Brute Force	Observation
+Low	Successful	Successful	Minimal protections
+Medium	More difficult	More difficult	Additional validation and controls
+High	Significantly restricted	Significantly restricted	Stronger defensive implementation
+
+
+The most important part of this project was comparing the same attack across different security levels.
+This demonstrated how application design decisions directly affect exploitability.
+# Lessons Learned
+- Learned how to deploy DVWA safely using Docker
+- Gained practical experience attacking a deliberately vulnerable web application
+- Learned how SQL injection changes the logic of an insecure database query
+- Learned why parameterized queries are an effective SQL injection defense
+- Learned how weak authentication controls enable brute-force attacks
+- Learned how rate limiting and lockout controls reduce brute-force risk
+- Compared vulnerable and more secure application configurations
+- Improved my understanding of offensive techniques from a defensive perspective
+- Learned why remediation analysis is more valuable than simply reproducing an exploit
+# Technologies Used
+- DVWA
+- Kali Linux
+- Docker
+- Linux
+- SQL
+- HTTP
+- Web Application Security
+- SQL Injection
+- Brute-Force Testing
+- Virtual Machines
+- Host-Only Networking
+# Issues / Future Work
+The most important requirement in this project was isolation.
+DVWA is intentionally vulnerable, so the target VM was kept inside the lab environment and was not exposed to the public internet or normal production devices.
+For future work, I want to compare the DVWA source code between security levels and identify the exact code changes responsible for blocking the attacks.
+I also want to forward web application and authentication logs into Wazuh or Splunk so the attacks can be investigated from a SOC perspective.
+This would create a complete workflow:
+Reconnaissance
+      ↓
+Attack
+      ↓
+Application Logs
+      ↓
+SIEM / EDR
+      ↓
+Detection
+      ↓
+Investigation
+      ↓
+Remediation
